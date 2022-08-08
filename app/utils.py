@@ -1,13 +1,14 @@
 import pandas as ps
 from datetime import datetime, date
 
+
 def filter_data(is_image_exists, min_age, max_age):
     df = ps.read_csv(
         "s3://processed-data/output.csv",
         storage_options={
             "key": "admin",
             "secret": "password",
-            "client_kwargs": {"endpoint_url": "http://127.0.0.1:9000"}
+            "client_kwargs": {"endpoint_url": "http://minio:9000"}
         }
     )
     df[" age"] = df.apply(lambda x: get_age_from_ts(x[" birthts"]), axis=1)

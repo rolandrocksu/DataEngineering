@@ -11,7 +11,7 @@ def main():
     # Create a client with the MinIO server playground, its access key
     # and secret key.
     client = Minio(
-        "127.0.0.1:9000",
+        "minio:9000",
         access_key="admin",
         secret_key="password",
         secure=False,
@@ -49,10 +49,9 @@ def upload_files(client):
         print("Bucket 'src-data-csv' already exists")
 
     # Getting all source data paths
-    path = Path.cwd().parent.joinpath("02-src-data")
+    path = Path.cwd().joinpath("02-src-data")
     list_of_image = []
     list_of_csv = []
-
     for root, dirs, files in os.walk(path):
         for file in files:
             if "csv" in file:
@@ -72,6 +71,8 @@ def upload_files(client):
             "src-data-csv", Path(path).name, path,
         )
 
+    print("Done")
+
 
 def gen_output_csv(client):
 
@@ -88,7 +89,7 @@ def gen_output_csv(client):
                 storage_options={
                     "key": "admin",
                     "secret": "password",
-                    "client_kwargs": {"endpoint_url": "http://127.0.0.1:9000"}
+                    "client_kwargs": {"endpoint_url": "http://minio:9000"}
                 }
             )
             # print(list(df.columns))
