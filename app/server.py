@@ -5,6 +5,10 @@ from minio.error import S3Error
 
 
 app = FastAPI()
+try:
+    file_uploader.main()
+except S3Error as exc:
+    print("error occurred.", exc)
 
 @app.get("/")
 def root():
