@@ -1,7 +1,6 @@
 from minio import Minio
 from minio.error import S3Error
 from pathlib import Path
-from datetime import timedelta
 import os
 import pandas
 import csv
@@ -19,10 +18,7 @@ def main():
     )
 
     upload_files(client)
-    list_object = client.list_objects("src-data-csv")
-    # list_img_object = client.list_objects("src-data-image")
-    gen_output_csv(list_object, client)
-
+    gen_output_csv(client)
 
     found = client.bucket_exists("processed-data")
     if not found:
@@ -77,11 +73,13 @@ def upload_files(client):
         )
 
 
-def gen_output_csv(list_object, client):
+def gen_output_csv(client):
+
+    list_object = client.list_objects("src-data-csv")
+    list_img_names = [obj.object_name for obj in client.list_objects("src-data-image")]
 
     with open('output.csv', mode='w') as output:
         output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        count = 0
         output_writer.writerow(["user_id", " first_name", " last_name", " birthts", " img_path"])
         for obj in list_object:
 
@@ -95,14 +93,17 @@ def gen_output_csv(list_object, client):
             )
             # print(list(df.columns))
             # print([df[item][0] for item in list(df.columns)])
-            url = client.get_presigned_url(
-                "GET",
-                "src-data-image",
-                f"{obj.object_name}".split(".")[0] + ".png",
-            )
+            user_id = f"{obj.object_name}".split(".")[0]
+            image_name = f"{user_id}.png"
+            url = " "
+            if image_name in list_img_names:
+                url = client.get_presigned_url(
+                    "GET",
+                    "src-data-image",
+                    image_name,
+                )
 
-            count += 1
-            output_writer.writerow([count, df["first_name"][0], df[" last_name"][0], df[" birthts"][0], url])
+            output_writer.writerow([user_id, df["first_name"][0], df[" last_name"][0], df[" birthts"][0]//1000, url])
 
 
 if __name__ == "__main__":
